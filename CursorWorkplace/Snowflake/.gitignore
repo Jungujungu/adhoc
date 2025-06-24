@@ -59,6 +59,7 @@ secrets.json
 credentials.json
 *.pem
 *.key
+env_example.txt
 
 # Snowflake
 snowflake_connection.json 
