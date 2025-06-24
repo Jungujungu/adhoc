@@ -4,6 +4,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
+    # Environment detection
+    ENV = os.getenv("ENV", "development")
+    DEBUG = ENV == "development"
+    
     # Snowflake Configuration
     SNOWFLAKE_ACCOUNT = os.getenv("SNOWFLAKE_ACCOUNT")
     SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER")
@@ -23,6 +27,16 @@ class Config:
     # Sample table structure (adjust based on your actual data)
     KEYWORD_TABLE = os.getenv("KEYWORD_TABLE", "amazon_keywords")
     
+    # Security Configuration
+    SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
+    
+    # API Configuration
+    API_HOST = os.getenv("API_HOST", "0.0.0.0")
+    API_PORT = int(os.getenv("API_PORT", "8000"))
+    
+    # Rate Limiting
+    MAX_REQUESTS_PER_MINUTE = int(os.getenv("MAX_REQUESTS_PER_MINUTE", "60"))
+    
     @classmethod
     def validate_config(cls):
         """Validate that all required environment variables are set"""
@@ -38,4 +52,14 @@ class Config:
         if missing_vars:
             raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
         
-        return True 
+        return True
+    
+    @classmethod
+    def get_database_url(cls):
+        """Get database connection string for logging (without password)"""
+        return f"snowflake://{cls.SNOWFLAKE_USER}@{cls.SNOWFLAKE_ACCOUNT}/{cls.SNOWFLAKE_DATABASE}/{cls.SNOWFLAKE_SCHEMA}"
+    
+    @classmethod
+    def is_production(cls):
+        """Check if running in production environment"""
+        return cls.ENV == "production" 

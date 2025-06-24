@@ -5,26 +5,81 @@ from typing import Dict, Any, List, Optional
 import logging
 import traceback
 import time
+import os
+from contextlib import asynccontextmanager
 
 from database.snowflake_client import SnowflakeClient
 from ai.claude_client import ClaudeClient
 from config import Config
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Configure logging based on environment
+if Config.is_production():
+    logging.basicConfig(level=logging.WARNING)
+else:
+    logging.basicConfig(level=logging.INFO)
+
 logger = logging.getLogger(__name__)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan manager"""
+    # Startup
+    try:
+        Config.validate_config()
+        logger.info("Configuration validated successfully")
+        logger.info(f"Environment: {Config.ENV}")
+        logger.info(f"Database: {Config.get_database_url()}")
+        
+        # Test connections on startup
+        try:
+            sf_client = get_snowflake_client()
+            logger.info("Snowflake connection test successful")
+        except Exception as e:
+            logger.warning(f"Snowflake connection test failed: {e}")
+        
+        try:
+            claude = get_claude_client()
+            logger.info("Claude API connection test successful")
+        except Exception as e:
+            logger.warning(f"Claude API connection test failed: {e}")
+            
+    except ValueError as e:
+        logger.error(f"Configuration error: {e}")
+        raise
+    
+    yield
+    
+    # Shutdown
+    global snowflake_client
+    if snowflake_client:
+        try:
+            snowflake_client.close()
+            logger.info("Snowflake connection closed")
+        except Exception as e:
+            logger.error(f"Error closing Snowflake connection: {e}")
 
 # Initialize FastAPI app
 app = FastAPI(
     title="Amazon Keyword Performance AI Chatbot",
     description="AI-powered chatbot for analyzing Amazon keyword performance data from Snowflake",
-    version="1.0.0"
+    version="1.0.0",
+    docs_url="/docs" if not Config.is_production() else None,
+    redoc_url="/redoc" if not Config.is_production() else None,
+    lifespan=lifespan
 )
 
-# Add CORS middleware
+# Add CORS middleware with production-safe defaults
+allowed_origins = ["*"]  # Configure appropriately for production
+if Config.is_production():
+    # In production, specify exact origins
+    allowed_origins = [
+        "https://share.streamlit.io",
+        "https://your-streamlit-app.streamlit.app"  # Replace with your actual Streamlit URL
+    ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -71,40 +126,6 @@ def get_claude_client():
             logger.error(f"Failed to initialize Claude client: {e}")
             raise
     return claude_client
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize connections on startup"""
-    try:
-        Config.validate_config()
-        logger.info("Configuration validated successfully")
-        
-        # Test connections on startup
-        try:
-            sf_client = get_snowflake_client()
-            logger.info("Snowflake connection test successful")
-        except Exception as e:
-            logger.warning(f"Snowflake connection test failed: {e}")
-        
-        try:
-            claude = get_claude_client()
-            logger.info("Claude API connection test successful")
-        except Exception as e:
-            logger.warning(f"Claude API connection test failed: {e}")
-            
-    except ValueError as e:
-        logger.error(f"Configuration error: {e}")
-        raise
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Clean up connections on shutdown"""
-    global snowflake_client
-    if snowflake_client:
-        try:
-            snowflake_client.close()
-        except Exception as e:
-            logger.error(f"Error closing Snowflake connection: {e}")
 
 @app.get("/")
 async def root():
@@ -330,4 +351,9 @@ async def get_table_schema():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(
+        app, 
+        host=Config.API_HOST, 
+        port=Config.API_PORT,
+        log_level="info" if not Config.is_production() else "warning"
+    ) 
