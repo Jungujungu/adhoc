@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Paint Tool</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-paint-brush"></i> Online Paint Tool</h1>
+            <div class="header-controls">
+                <button id="clearBtn" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Clear Canvas
+                </button>
+                <button id="saveBtn" class="btn btn-success">
+                    <i class="fas fa-download"></i> Save Image
+                </button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="toolbar">
+                <div class="tool-section">
+                    <h3>Tools</h3>
+                    <div class="tool-buttons">
+                        <button id="brushTool" class="tool-btn active" title="Brush">
+                            <i class="fas fa-paint-brush"></i>
+                        </button>
+                        <button id="eraserTool" class="tool-btn" title="Eraser">
+                            <i class="fas fa-eraser"></i>
+                        </button>
+                        <button id="lineTool" class="tool-btn" title="Line">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button id="rectangleTool" class="tool-btn" title="Rectangle">
+                            <i class="fas fa-square"></i>
+                        </button>
+                        <button id="circleTool" class="tool-btn" title="Circle">
+                            <i class="fas fa-circle"></i>
+                        </button>
+                        <button id="fillTool" class="tool-btn" title="Fill">
+                            <i class="fas fa-fill-drip"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tool-section">
+                    <h3>Colors</h3>
+                    <div class="color-palette">
+                        <div class="color-btn active" style="background-color: #000000;" data-color="#000000"></div>
+                        <div class="color-btn" style="background-color: #ff0000;" data-color="#ff0000"></div>
+                        <div class="color-btn" style="background-color: #00ff00;" data-color="#00ff00"></div>
+                        <div class="color-btn" style="background-color: #0000ff;" data-color="#0000ff"></div>
+                        <div class="color-btn" style="background-color: #ffff00;" data-color="#ffff00"></div>
+                        <div class="color-btn" style="background-color: #ff00ff;" data-color="#ff00ff"></div>
+                        <div class="color-btn" style="background-color: #00ffff;" data-color="#00ffff"></div>
+                        <div class="color-btn" style="background-color: #ffa500;" data-color="#ffa500"></div>
+                        <div class="color-btn" style="background-color: #800080;" data-color="#800080"></div>
+                        <div class="color-btn" style="background-color: #008000;" data-color="#008000"></div>
+                        <div class="color-btn" style="background-color: #ffffff;" data-color="#ffffff"></div>
+                        <div class="color-btn" style="background-color: #808080;" data-color="#808080"></div>
+                    </div>
+                    <div class="custom-color">
+                        <label for="customColor">Custom Color:</label>
+                        <input type="color" id="customColor" value="#000000">
+                    </div>
+                </div>
+
+                <div class="tool-section">
+                    <h3>Brush Size</h3>
+                    <div class="size-control">
+                        <input type="range" id="brushSize" min="1" max="50" value="5">
+                        <span id="sizeValue">5px</span>
+                    </div>
+                </div>
+
+                <div class="tool-section">
+                    <h3>Opacity</h3>
+                    <div class="opacity-control">
+                        <input type="range" id="opacity" min="10" max="100" value="100">
+                        <span id="opacityValue">100%</span>
+                    </div>
+                </div>
+
+                <div class="tool-section">
+                    <h3>Canvas Size</h3>
+                    <div class="canvas-controls">
+                        <button id="smallCanvas" class="size-btn">Small</button>
+                        <button id="mediumCanvas" class="size-btn active">Medium</button>
+                        <button id="largeCanvas" class="size-btn">Large</button>
+                        <button id="fullCanvas" class="size-btn">Full</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="canvas" width="800" height="600"></canvas>
+                <div class="canvas-info">
+                    <span id="coordinates">X: 0, Y: 0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <span id="status">Ready to paint!</span>
+            <span id="toolInfo">Brush Tool | Size: 5px | Color: Black</span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
