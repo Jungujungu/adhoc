@@ -63,3 +63,6 @@ env_example.txt
 
 # Snowflake
 snowflake_connection.json 
+
+# Projects
+StreamDeck/Onsite Studio/
